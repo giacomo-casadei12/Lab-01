@@ -8,52 +8,82 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
-public class ViewImpl extends JFrame implements View {
+public class ViewImpl implements View {
 
     Controller controller;
 
     public ViewImpl() {
-        super("My BBoM App");
-        setSize(300, 70);
-        setResizable(false);
 
         try {
 
             Registry registry = LocateRegistry.getRegistry(1888);
             controller = (Controller) registry.lookup("Controller");
 
-            JButton button = new JButton("Update");
-            button.addActionListener(e -> {
-                try {
-                    log("State value: " + controller.increment());
-                } catch (RemoteException ex) {
-                    throw new RuntimeException(ex);
+            JFrame f = getjFrame();
+
+            f.addWindowListener(new WindowAdapter() {
+                public void windowClosing(WindowEvent ev) {
+                    System.exit(-1);
                 }
             });
+            
+            f.setVisible(true);
 
-            JPanel panel = new JPanel();
-            panel.add(button);
-
-            setLayout(new BorderLayout());
-            add(panel, BorderLayout.NORTH);
+            /*setLayout(new BorderLayout());            add(f, BorderLayout.NORTH);*/
         } catch (Exception e) {
             System.out.println(e.getMessage());
             System.exit(1);
         }
-        addWindowListener(new WindowAdapter() {
-            public void windowClosing(WindowEvent ev) {
-                System.exit(-1);
+
+    }
+
+    private JFrame getjFrame() {
+        JTextField state = new JTextField(16);
+        state.setEditable(false);
+        JButton button = new JButton("Basic Update");
+        button.addActionListener(e -> {
+            try {
+                state.setText("State value: " + controller.increment());
+            } catch (RemoteException ex) {
+                throw new RuntimeException(ex);
             }
         });
-    }
 
-    @Override
-    public void setVisibleD(boolean b) {
-        this.setVisible(b);
-    }
+        JFrame f = new JFrame("RMI APP");
 
-    private void log(String msg) {
-        System.out.println("[Output] " + msg);
+        JTextField t = new JTextField(16);
+
+        JButton b = new JButton("Custom Update");
+        b.addActionListener(e -> {
+            try {
+                state.setText("State value: " + controller.customIncrement(Integer.parseInt(t.getText())));
+                t.setText("");
+            } catch (RemoteException | NumberFormatException ex) {
+                throw new RuntimeException(ex);
+            }
+        });
+
+        JPanel p = new JPanel();
+
+        p.add(t);
+        p.add(b);
+
+        JPanel p1 = new JPanel();
+        p1.add(state);
+
+        f.getContentPane().add(p1, BorderLayout.NORTH);
+
+        // add panel to frame
+        f.getContentPane().add(p, BorderLayout.CENTER);
+
+        // set the size of frame
+        f.setSize(500, 200);
+
+        JPanel panel = new JPanel();
+        panel.add(button);
+
+        f.getContentPane().add(panel, BorderLayout.SOUTH);
+        return f;
     }
 
 }

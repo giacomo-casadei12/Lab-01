@@ -18,4 +18,9 @@ public class ControllerImpl extends java.rmi.server.UnicastRemoteObject implemen
         return this.model.addValue(BASE_INCREMENT);
     }
 
+    @Override
+    public int customIncrement(int value) throws RemoteException {
+        return this.model.addValue(value);
+    }
+
 }
